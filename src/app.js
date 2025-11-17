@@ -1,49 +1,39 @@
 const express = require("express");
-const req = require("express/lib/request");
-const res = require("express/lib/response");
-
+const connectDB = require("./config/database");
+const User = require("./models/user");
 const app = express();
-const { adminAuth, userAuth } = require("./utils/auth");
 
-const user = {firstName: "Param",lastName:"Singh"}
+// const { adminAuth, userAuth } = require("./utils/auth");
 
+app.post("/signUp", async(req, res) => {
 
-//need of middleware is actually performing repetitive route operation which we are going to use different end
-// like reducing the reductancy 
-//for eg having to check the authentication of user with diferent admin operation
-// like getting the user details, updating , deleting or adding 
-// it all require basic permission which the user should have before performing any operation
-// hence middleware actually simplies our working
-// as we went through many route handlers
-
-
-app.get("/admin/getuserdata", adminAuth, (req, res) => {
-    {
-        console.log("getuser data");
-        res.send("Send user data");
+    const userObj = new User({
+        firstName: "Param",
+        lastName: "Singh",
+        email: "param@gmail.com",
+        age: "22",
+        password: 12345,
+        phNumber: 123445
+    })
+    try {
+        await userObj.save();
+        res.send(userObj);
+    }catch (err) {
+        res.status(400).send("Error Saving the data");
+        console.log("Welcome to Home Page");
     }
 });
 
-app.delete("/admin/deletedata", adminAuth, (req, res) => {
-    {
-        console.log("getuser data");
-        res.send("delete user data");
-    }
+app.use("/", (req, res) => {
+    res.send("Welcome to Home Page");
+    console.log("Welcome to Home Page");
 });
 
-app.get("/user/getUserdata", userAuth, (req,res)=>{
-    console.log("Sent the data");
-    res.send(user);
-    
-})
-
-app.delete("/user/delteUserdata", userAuth, (req, res) => {
-    {
-        console.log("Deleted User successfully");
-        res.send("deleted user data");
-    }
-});
-
-app.listen(8000, () => {
-    console.log("Server is connected to Port 8000 successfully");
+connectDB().then(() => {
+    console.log("DataBase connection established");
+    app.listen(8000, () => {
+        console.log("Server is connected to Port 8000 successfully");
+    });
+}).catch(() => {
+    console.log("DataBase conection failed");
 });
