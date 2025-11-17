@@ -5,16 +5,21 @@ const app = express();
 
 // const { adminAuth, userAuth } = require("./utils/auth");
 
+app.use(express.json())
+
 app.post("/signUp", async(req, res) => {
 
-    const userObj = new User({
-        firstName: "Param",
-        lastName: "Singh",
-        email: "param@gmail.com",
-        age: "22",
-        password: 12345,
-        phNumber: 123445
-    })
+    console.log(req.body);
+    const userObj = new User(req.body);
+
+    // const userObj = new User({
+    //     firstName: "Param",
+    //     lastName: "Singh",
+    //     email: "param@gmail.com",
+    //     age: "22",
+    //     password: 12345,
+    //     phNumber: 123445
+    // });
     try {
         await userObj.save();
         res.send(userObj);
