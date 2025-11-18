@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/user");
+const { threadId } = require("worker_threads");
 const app = express();
 
 // const { adminAuth, userAuth } = require("./utils/auth");
@@ -13,7 +14,7 @@ app.get("/user", async (req, res) => {
 
         if (user.length === 0) {
             res.status(401).send("User Not Found " + err.message)
-        }else{
+        } else {
             res.send(user);
         }
         res.send(user);
@@ -27,7 +28,7 @@ app.get("/feed", async (req, res) => {
         const user = await User.find();
         if (user.length === 0) {
             res.status(401).send("User Not Found " + err.message)
-        }else{
+        } else {
             res.send(user);
         }
         res.send(user);
@@ -66,7 +67,17 @@ app.patch("/user", async (req, res) => {
     console.log(req.body.userId);
     const data = req.body;
     try {
-        const user = await User.findByIdAndUpdate(req.body.userId, data, {returnDocument : 'before', runValidators: true});
+        const Allowed_Field_Update = ["userId", "photoUrl", "age", "gender", "skills", "about"];
+        const update_allowed_flag = Object.keys(data).every((fields) =>
+            Allowed_Field_Update.includes(fields)
+        );
+        if (!update_allowed_flag) {
+            throw new Error("Update not allowed");
+        }
+        if (data?.skills?.length > 10) {
+            throw new Error("Max 10 skills are allowed");
+        }
+        const user = await User.findByIdAndUpdate(req.body.userId, data, { returnDocument: 'before', runValidators: true });
         res.send(user);
     } catch (err) {
         res.status(400).send("Error updating the data " + err.message);

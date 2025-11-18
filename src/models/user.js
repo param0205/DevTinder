@@ -1,5 +1,6 @@
 const { url } = require("inspector");
 const mongoose = require("mongoose");
+const validator  = require("validator");
 
 
 const userSchema = new mongoose.Schema({
@@ -22,12 +23,22 @@ const userSchema = new mongoose.Schema({
         lowercase:true,
         unique:true,
         trim:true,
-        maxLength:50
+        maxLength:50,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid email address " + value);
+            }
+        }
     },
     password: {
         type: "String",
         required:true,
-        maxLength:50
+        maxLength:50,
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Enter a Strong Password : "+ value)
+            }
+        }
     },
     age: {
         type: "Number",
@@ -38,7 +49,7 @@ const userSchema = new mongoose.Schema({
         type: "Number",
         // required:true,
         trim:true,
-        maxLength:10
+        maxLength:10,
     },
     gender: {
         type:"String",
@@ -50,7 +61,12 @@ const userSchema = new mongoose.Schema({
     },
     photoUrl:{
         type:"String",
-        default :("https://p.kindpng.com/picc/s/252-2524695_dummy-profile-image-jpg-hd-png-download.png")
+        default :("https://p.kindpng.com/picc/s/252-2524695_dummy-profile-image-jpg-hd-png-download.png"),
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Invalid Photo Url: "+ value);
+            }
+        }
     },
     about:{
         type:"String",
