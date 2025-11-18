@@ -40,20 +40,35 @@ app.post("/signUp", async (req, res) => {
 
     console.log(req.body);
     const userObj = new User(req.body);
-
-    // const userObj = new User({
-    //     firstName: "Param",
-    //     lastName: "Singh",
-    //     email: "param@gmail.com",
-    //     age: "22",
-    //     password: 12345,
-    //     phNumber: 123445
-    // });
     try {
         await userObj.save();
         res.send(userObj);
     } catch (err) {
         res.status(400).send("Error Saving the data " + err.message);
+        console.log("Welcome to Home Page");
+    }
+});
+
+app.delete("/user", async (req, res) => {
+
+    console.log(req.body.userId);
+    try {
+        await User.findByIdAndDelete(req.body.userId);
+        res.send("User deleted Successfully");
+    } catch (err) {
+        res.status(400).send("Error deleting the data " + err.message);
+        console.log("Welcome to Home Page");
+    }
+});
+
+app.patch("/user", async (req, res) => {
+    console.log(req.body.userId);
+    const data = req.body;
+    try {
+        const user = await User.findByIdAndUpdate(req.body.userId, data, {returnDocument : 'before'});
+        res.send(user);
+    } catch (err) {
+        res.status(400).send("Error deleting the data " + err.message);
         console.log("Welcome to Home Page");
     }
 });
