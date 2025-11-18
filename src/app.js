@@ -5,9 +5,38 @@ const app = express();
 
 // const { adminAuth, userAuth } = require("./utils/auth");
 
-app.use(express.json())
+app.use(express.json());
 
-app.post("/signUp", async(req, res) => {
+app.get("/user", async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+
+        if (user.length === 0) {
+            res.status(401).send("User Not Found " + err.message)
+        }else{
+            res.send(user);
+        }
+        res.send(user);
+    } catch (err) {
+        res.status(401).send("Something went wrong!!" + err.message);
+    }
+});
+
+app.get("/feed", async (req, res) => {
+    try {
+        const user = await User.find();
+        if (user.length === 0) {
+            res.status(401).send("User Not Found " + err.message)
+        }else{
+            res.send(user);
+        }
+        res.send(user);
+    } catch (err) {
+        res.status(401).send("Something went wrong!!" + err.message);
+    }
+});
+
+app.post("/signUp", async (req, res) => {
 
     console.log(req.body);
     const userObj = new User(req.body);
@@ -23,8 +52,8 @@ app.post("/signUp", async(req, res) => {
     try {
         await userObj.save();
         res.send(userObj);
-    }catch (err) {
-        res.status(400).send("Error Saving the data");
+    } catch (err) {
+        res.status(400).send("Error Saving the data " + err.message);
         console.log("Welcome to Home Page");
     }
 });
