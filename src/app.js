@@ -44,6 +44,7 @@ app.post("/signUp", async (req, res) => {
         await userObj.save();
         res.send(userObj);
     } catch (err) {
+        console.log(err);
         res.status(400).send("Error Saving the data " + err.message);
         console.log("Welcome to Home Page");
     }
@@ -65,18 +66,17 @@ app.patch("/user", async (req, res) => {
     console.log(req.body.userId);
     const data = req.body;
     try {
-        const user = await User.findByIdAndUpdate(req.body.userId, data, {returnDocument : 'before'});
+        const user = await User.findByIdAndUpdate(req.body.userId, data, {returnDocument : 'before', runValidators: true});
         res.send(user);
     } catch (err) {
-        res.status(400).send("Error deleting the data " + err.message);
-        console.log("Welcome to Home Page");
+        res.status(400).send("Error updating the data " + err.message);
     }
 });
 
-app.use("/", (req, res) => {
-    res.send("Welcome to Home Page");
-    console.log("Welcome to Home Page");
-});
+// app.use("/", (req, res) => {
+//     res.send("Welcome to Home Page");
+//     console.log("Welcome to Home Page");
+// });
 
 connectDB().then(() => {
     console.log("DataBase connection established");
