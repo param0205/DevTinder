@@ -6,10 +6,17 @@ const app = express();
 const { validateSignUp } = require("./utils/validate");
 const bcrypt = require("bcrypt");
 const { hash } = require("crypto");
-
+const cookieParser = require("cookie-parser");
+const jwt = require('jsonwebtoken');
+const cors = require("cors");
 // const { adminAuth, userAuth } = require("./utils/auth");
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(cors({
+    origin: true,           // accept the origin sent by client
+    credentials: true
+}));
 
 app.get("/user", async (req, res) => {
     try {
@@ -45,16 +52,16 @@ app.post("/signUp", async (req, res) => {
     console.log(req.body);
     try {
         validateSignUp(req.body);
-        const {firstName, lastName, email, password, age} = req.body;
-        const encrpt_password = await bcrypt.hash(password,10);
+        const { firstName, lastName, email, password, age } = req.body;
+        const encrpt_password = await bcrypt.hash(password, 10);
         console.log(encrpt_password);
 
-       const userObj = await User({
-          firstName,
-          lastName,
-          email,
-          password:encrpt_password,
-          age,
+        const userObj = await User({
+            firstName,
+            lastName,
+            email,
+            password: encrpt_password,
+            age,
         });
         await userObj.save();
         res.send(userObj);
@@ -65,20 +72,42 @@ app.post("/signUp", async (req, res) => {
     }
 });
 
+app.get("/profile", async (req, res) => {
+    try {
+        const token = req.cookies?.token;
+        if (!token) {
+            throw new Error("Invalid !! : Kindly login")
+        } else {
+            const { _id } = jwt.verify(token, "PRIVATEKEY@123");
+            const user = await User.findById(_id);
+            if (!user) { throw new Error("Invalid User creditenials") }
+            else {
+                res.send(user);
+            }
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).send("Error : " + err.message);
+        console.log("Welcome to Home Page");
+    }
+});
+
 app.post("/login", async (req, res) => {
 
     console.log(req.body);
     try {
-        const {email, password} = req.body;
-        const user = await User.findOne({ email: email});
+        const { email, password } = req.body;
+        const user = await User.findOne({ email: email });
 
-        if(!user){
+        if (!user) {
             throw new Error("User doesn't exist");
-        }else{
+        } else {
             const password_flag = await bcrypt.compare(password, user.password)
-            if(!password_flag){
+            if (!password_flag) {
                 throw new Error("Incorrect Password!!")
-            }else{
+            } else {
+                const token = jwt.sign({ _id: user._id }, "PRIVATEKEY@123")
+                res.cookie("token", token);
                 res.send("Login Successfull !!");
             }
         }
