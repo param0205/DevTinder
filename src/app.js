@@ -9,7 +9,7 @@ const { hash } = require("crypto");
 const cookieParser = require("cookie-parser");
 const jwt = require('jsonwebtoken');
 const cors = require("cors");
-// const { adminAuth, userAuth } = require("./utils/auth");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -72,19 +72,9 @@ app.post("/signUp", async (req, res) => {
     }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
     try {
-        const token = req.cookies?.token;
-        if (!token) {
-            throw new Error("Invalid !! : Kindly login")
-        } else {
-            const { _id } = jwt.verify(token, "PRIVATEKEY@123");
-            const user = await User.findById(_id);
-            if (!user) { throw new Error("Invalid User creditenials") }
-            else {
-                res.send(user);
-            }
-        }
+        res.send(req.user);
     } catch (err) {
         console.log(err);
         res.status(400).send("Error : " + err.message);

@@ -1,28 +1,19 @@
-const adminAuth =  (req, res, next) => {
-    const token = "xyz" // req.params.key or token
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+
+const userAuth =  async (req, res, next) => {
     try {
-        if (token !== "xyz") {
-            throw new Error("User is not allowed");
-            // res.status(401).send("User is not allowed to make changes")
+        const token = req.cookies?.token;
+        if (!token) {
+            throw new Error("Invalid token !! : Kindly login")
         } else {
-            next();
-        }
-
-    } catch (err) {
-        console.log(err);
-        res.send("user is tired");
-    }
-
-}
-
-const userAuth =  (req, res, next) => {
-    const token = "user" // req.params.key or token
-    try {
-        if (token !== "user") {
-            throw new Error("User is not allowed");
-            // res.status(401).send("User is not allowed to make changes")
-        } else {
-            next();
+            const { _id } = jwt.verify(token, "PRIVATEKEY@123");
+            const user = await User.findById(_id);
+            if (!user) { throw new Error("Invalid User creditenials") }
+            else {
+                req.user = user
+                next();
+            }
         }
 
     } catch (err) {
@@ -33,6 +24,5 @@ const userAuth =  (req, res, next) => {
 }
 
 module.exports = {
-    adminAuth,
     userAuth
 }
