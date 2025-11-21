@@ -4,6 +4,7 @@ const User = require("../models/user");
 const userAuth =  async (req, res, next) => {
     try {
         const token = req.cookies?.token;
+        console.log(req.cookies);
         if (!token) {
             throw new Error("Invalid token !! : Kindly login")
         } else {
@@ -18,7 +19,7 @@ const userAuth =  async (req, res, next) => {
 
     } catch (err) {
         console.log(err);
-        res.send("user is tired");
+        res.send("Error1 :" + err.message);
     }
 
 }

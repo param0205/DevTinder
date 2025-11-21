@@ -13,10 +13,6 @@ const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: true,           // accept the origin sent by client
-    credentials: true
-}));
 
 app.get("/user", async (req, res) => {
     try {
@@ -92,11 +88,12 @@ app.post("/login", async (req, res) => {
         if (!user) {
             throw new Error("User doesn't exist");
         } else {
-            const password_flag = await bcrypt.compare(password, user.password)
+            const password_flag = await user.passwordCheck(password)
+            console.log(password_flag);
             if (!password_flag) {
                 throw new Error("Incorrect Password!!")
             } else {
-                const token = jwt.sign({ _id: user._id }, "PRIVATEKEY@123")
+                const token =await user.jwtToken();
                 res.cookie("token", token);
                 res.send("Login Successfull !!");
             }
