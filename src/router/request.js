@@ -51,12 +51,52 @@ requestRouter.post("/request/:status/:userId", userAuth, async (req, res) => {
       console.log(req.user);
       res.json({
          message:`${req.user.firstName} is ${status} in  ${toUser.firstName}`,
-         data
+         // data
       });
    } catch (err) {
-      res.send("Error: " + err)
+      res.status(400).send("Error: " + err)
       console.log("Error: " + err);
    }
 });
+
+requestRouter.post("/request/review/:status/:requestId", userAuth , async(req,res) =>{
+   try{
+      const { status, requestId } = req.params;
+      const loggedInUser = req.user;
+      //validate status
+      const allowedStatus = ["accepted","rejected"];
+      if(!allowedStatus.includes(status)){
+         throw new Error("Invalid connection status request");
+      }
+
+      //validate requestId
+      const existingRequestId = await ConnectionRequest.findOne({ 
+         _id: requestId,
+         toUserId : loggedInUser._id,
+         status:"interested"
+      });
+      if(!existingRequestId){
+         throw new Error("Connection Request not found");
+      }
+
+      //validate fromUserId
+      const validfromUserId = await User.findOne({_id : existingRequestId.fromUserId});
+      if(!validfromUserId){
+         throw new Error("Connection Request from Invalid User");
+      }
+
+      existingRequestId.status = status;
+      const data = await existingRequestId.save();
+      res.json({
+         message:`${loggedInUser.firstName} ${status} ${validfromUserId.firstName}'s connection request `,
+         data
+      })
+
+
+   }catch(err){
+      console.log(err);
+      res.status(400).send("Error: " + err.message);
+   }
+})
 
 module.exports = requestRouter;
